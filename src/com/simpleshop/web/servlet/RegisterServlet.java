@@ -7,6 +7,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.AddressException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +21,7 @@ import org.apache.commons.beanutils.Converter;
 import com.simpleshop.domain.User;
 import com.simpleshop.service.UserService;
 import com.simpleshop.utils.CommonsUtils;
+import com.simpleshop.utils.MailUtils;
 
 public class RegisterServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -57,13 +60,29 @@ public class RegisterServlet extends HttpServlet {
 		user.setUid(CommonsUtils.getUUID());
 		user.setTelephone(null);
 		user.setState(0);
-		user.setCode(CommonsUtils.getUUID());
+		String code= CommonsUtils.getUUID();
+		user.setCode(code);
 		
 		UserService service = new UserService();
 		
 		boolean isRegisterSuccess = service.regist(user);
 		
 		if(isRegisterSuccess){
+			//发送邮件
+			String emailMsg = "恭喜您注册成功，请点击下面的链接进行激活"
+					+"<a href='http://localhost:8081/simpleshop/active?activeCode="+code+"'>"
+					+"http://localhost:8081/simpleshop/active?activeCode="+code+"<a/>"; 
+			
+			try {
+				MailUtils.sendMail(user.getEmail(), emailMsg);
+			} catch (AddressException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (MessagingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 			response.sendRedirect(request.getContextPath()+"/registerSuccess.jsp");
 		}else{
 			response.sendRedirect(request.getContextPath()+"/registerFail.jsp");
