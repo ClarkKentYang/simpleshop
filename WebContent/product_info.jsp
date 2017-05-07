@@ -73,14 +73,14 @@ body {
 						</div>
 
 						<div style="margin: 20px 0 10px 0;; text-align: center;">
-							<a href="cart.htm"> <input
+							<a href="${pageContext.request.contextPath}/product?method=addProductToCart"> <input
 								style="background: url('./images/product.gif') no-repeat scroll 0 -600px rgba(0, 0, 0, 0); height: 36px; width: 127px;"
 								value="加入购物车" type="button">
 							</a> &nbsp;收藏商品
 						</div>
 					</div>
 					<div>
-						<a href="${pageContext.request.contextPath}/productListByCid?cid=${cid}&currentPage=${currentPage}">返回列表页面</a>
+						<a href="${pageContext.request.contextPath}/product?method=productListByCid&cid=${cid}&currentPage=${currentPage}">返回列表页面</a>
 					</div>
 				</div>
 			</div>

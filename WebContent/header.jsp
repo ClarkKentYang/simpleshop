@@ -55,10 +55,10 @@
 			$(function() {
 				var content = "";
 				$.post(
-					"${pageContext.request.contextPath}/categoryList",
+					"${pageContext.request.contextPath}/product?method=categoryList",
 					function(data) {
 						for (var i = 0; i<data.length; i++) {
-							content+="<li><a href='${pageContext.request.contextPath}/productListByCid?cid="+ data[i].cid +"'>"+ data[i].cname +"</a></li>";
+							content+="<li><a href='${pageContext.request.contextPath}/product?method=productListByCid&cid="+ data[i].cid +"'>"+ data[i].cname +"</a></li>";
 						}
 						$("#categoryUL").html(content);
 					},

@@ -1,7 +1,6 @@
 package com.simpleshop.web.servlet;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -23,16 +22,66 @@ import com.simpleshop.service.UserService;
 import com.simpleshop.utils.CommonsUtils;
 import com.simpleshop.utils.MailUtils;
 
-public class RegisterServlet extends HttpServlet {
+/**
+ * Servlet implementation class UserServlet
+ */
+public class UserServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
-
-    public RegisterServlet() {
+    public UserServlet() {
         super();
     }
 
-
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		request.setCharacterEncoding("UTF-8");
+		
+		String method = request.getParameter("method");
+		switch (method) {
+		case "active":
+			active(request,response);
+			break;
+		case "checkUsername":
+			checkUsername(request,response);
+			break;
+		case "register":
+			register(request,response);
+			break;
+
+		default:
+			break;
+		}
+	
+	}
+
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		doGet(request, response);
+	}
+
+	
+	protected void active(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+		//获取激活码
+		String activeCode = request.getParameter("activeCode");
+		UserService service = new UserService();
+		service.active(activeCode);
+		response.sendRedirect(request.getContextPath()+"/login.jsp");
+	}
+	
+	
+	
+	protected void checkUsername(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
+		String username = request.getParameter("username");
+		UserService service = new UserService();
+		boolean isExist = service.checkUsername(username);
+		
+		String json = "{\"isExist\":"+ isExist +"}";
+		response.getWriter().write(json);
+	}
+	
+	
+	protected void register(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		request.setCharacterEncoding("UTF-8");
 		//获得表单数据
 		Map<String,String[]> properties = request.getParameterMap();
@@ -70,8 +119,8 @@ public class RegisterServlet extends HttpServlet {
 		if(isRegisterSuccess){
 			//发送邮件
 			String emailMsg = "恭喜您注册成功，请点击下面的链接进行激活"
-					+"<a href='http://localhost:8081/simpleshop/active?activeCode="+code+"'>"
-					+"http://localhost:8081/simpleshop/active?activeCode="+code+"<a/>"; 
+					+"<a href='http://localhost:8081/simpleshop/user?method=active&activeCode="+code+"'>"
+					+"http://localhost:8081/simpleshop/user?method=active&activeCode="+code+"<a/>"; 
 			
 			try {
 				MailUtils.sendMail(user.getEmail(), emailMsg);
@@ -88,9 +137,4 @@ public class RegisterServlet extends HttpServlet {
 			response.sendRedirect(request.getContextPath()+"/registerFail.jsp");
 		}
 	}
-
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		doGet(request, response);
-	}
-
 }
