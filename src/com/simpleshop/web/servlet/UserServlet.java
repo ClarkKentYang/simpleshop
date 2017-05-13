@@ -1,6 +1,7 @@
 package com.simpleshop.web.servlet;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -9,9 +10,11 @@ import java.util.Map;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.ConvertUtils;
@@ -46,6 +49,13 @@ public class UserServlet extends HttpServlet {
 			break;
 		case "register":
 			register(request,response);
+			break;
+		case "login":
+			try {
+				login(request,response);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			break;
 
 		default:
@@ -125,10 +135,8 @@ public class UserServlet extends HttpServlet {
 			try {
 				MailUtils.sendMail(user.getEmail(), emailMsg);
 			} catch (AddressException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (MessagingException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
@@ -137,4 +145,52 @@ public class UserServlet extends HttpServlet {
 			response.sendRedirect(request.getContextPath()+"/registerFail.jsp");
 		}
 	}
+	
+	//用户登录
+	public void login(HttpServletRequest request, HttpServletResponse response)
+				throws Exception {
+			HttpSession session = request.getSession();
+
+			//获得输入的用户名和密码
+			String username = request.getParameter("username");
+			String password = request.getParameter("password");
+
+			//对密码进行加密
+			//password = MD5Utils.md5(password);
+
+			//将用户名和密码传递给service层
+			UserService service = new UserService();
+			User user = null;
+			user = service.login(username,password);
+
+			//判断用户是否登录成功 user是否是null
+			if(user!=null){
+				//登录成功
+				//***************判断用户是否勾选了自动登录*****************
+				String autoLogin = request.getParameter("autoLogin");
+				if("true".equals(autoLogin)){
+					//要自动登录
+					//创建存储用户名的cookie
+					Cookie cookie_username = new Cookie("cookie_username",user.getUsername());
+					cookie_username.setMaxAge(10*60);
+					//创建存储密码的cookie
+					Cookie cookie_password = new Cookie("cookie_password",user.getPassword());
+					cookie_password.setMaxAge(10*60);
+
+					response.addCookie(cookie_username);
+					response.addCookie(cookie_password);
+
+				}
+
+				//***************************************************
+				//将user对象存到session中
+				session.setAttribute("user", user);
+
+				//重定向到首页
+				response.sendRedirect(request.getContextPath()+"/index.jsp");
+			}else{
+				request.setAttribute("loginError", "用户名或密码错误");
+				request.getRequestDispatcher("/login.jsp").forward(request, response);
+			}
+		}
 }

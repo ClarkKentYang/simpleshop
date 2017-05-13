@@ -5,8 +5,10 @@ import java.util.List;
 
 import com.simpleshop.dao.ProductDao;
 import com.simpleshop.domain.Category;
+import com.simpleshop.domain.Order;
 import com.simpleshop.domain.PageBean;
 import com.simpleshop.domain.Product;
+import com.simpleshop.utils.DataSourceUtils;
 import com.sun.org.apache.regexp.internal.recompile;
 
 public class ProductService {
@@ -56,7 +58,6 @@ public class ProductService {
 		try {
 			totalCount = dao.getCount(cid);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -84,6 +85,30 @@ public class ProductService {
 			e.printStackTrace();
 		}
 		return product;
+	}
+
+	public void submitOrder(Order order) throws SQLException {
+		ProductDao dao = new ProductDao();
+		try {
+			//开启事务
+			DataSourceUtils.startTransaction();
+			dao.addOrders(order);
+			dao.addOrderItem(order);
+		} catch (SQLException e) {
+			DataSourceUtils.rollback();
+			e.printStackTrace();
+		} finally {
+			DataSourceUtils.commitAndRelease();
+		}
+	}
+
+	public void updateOrderAdrr(Order order) {
+		ProductDao dao = new ProductDao();
+		try {
+			dao.updateOrderAdrr(order);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

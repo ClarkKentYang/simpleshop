@@ -43,5 +43,10 @@ public class UserService {
 		}
 		return isExist>0?true:false;
 	}
+
+	public User login(String username, String password) throws SQLException {
+		UserDao dao = new UserDao();
+		return dao.login(username,password);
+	}
 	
 }
